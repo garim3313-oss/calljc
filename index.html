@@ -220,8 +220,8 @@
         document.getElementById('finalDivUsd').innerText = '$ ' + finalDivUsd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         
         // 원화 표시 (정수 콤마)
-        document.getElementById('finalGrowthKrw').innerText = finalGrowthKrw.toLocaleString('ko-KR', {maximumFractionDigits: 0});
-        document.getElementById('finalDivKrw').innerText = finalDivKrw.toLocaleString('ko-KR', {maximumFractionDigits: 0});
+        document.getElementById('finalGrowthKrw').innerText = finalGrowthKrw.toLocaleString('ko-KR', {maximumFractionDigits: 0}) + '원';
+        document.getElementById('finalDivKrw').innerText = finalDivKrw.toLocaleString('ko-KR', {maximumFractionDigits: 0}) + '원';
         
         document.getElementById('finalRatio').innerText = finalGrowthRatio + '% : ' + finalDividendRatio + '%';
 
