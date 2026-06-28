@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QQQM & SCHD 7:3 자동 리밸런싱 앱</title>
+    <title> 리밸런싱 계산기 </title>
     <style>
         body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #f4f6f8; margin: 0; padding: 15px; display: flex; justify-content: center; }
         .app-container { background-color: #ffffff; width: 100%; max-width: 450px; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
@@ -45,10 +45,10 @@
         <span class="status-badge" id="updateStatus">불러오는 중...</span>
     </div>
     <div class="info-box" id="dataBox" style="opacity: 0.5;">
-        <div class="info-row"><span>적용 환율:</span><b id="displayRate">대기중</b></div>
         <div class="info-row"><span>QQQ 현재가:</span><b id="displayQqq">대기중</b></div>
         <div class="info-row"><span>QQQM 현재가:</span><b id="displayQqqm">대기중</b></div>
         <div class="info-row"><span>SCHD 현재가:</span><b id="displaySchd">대기중</b></div>
+        <div class="info-row"><span>적용 환율:</span><b id="displayRate">대기중</b></div>
     </div>
 
     <div class="section-title">2. 내 계좌 현재 상태</div>
@@ -95,7 +95,7 @@
                 <div class="stat-krw" id="finalDivKrw">₩ 0</div>
             </div>
             
-            <div style="margin-top: 15px; border-top: 1px solid #bae6fd; padding-top: 10px; display: flex; justify-content: space-between; font-weight: bold; color: #0369a1;">
+            <div style="margin-top: 12px; border-top: 1px solid #bae6fd; padding-top: 10px; display: flex; justify-content: space-between; font-weight: bold; color: #0369a1;">
                 <span>최종 비율 (성장 : 배당)</span>
                 <span id="finalRatio">0% : 0%</span>
             </div>
@@ -145,7 +145,7 @@
             document.getElementById('displaySchd').innerText = '$ ' + marketData.schdPrice;
 
             // 상태 업데이트 및 계산 버튼 활성화
-            document.getElementById('updateStatus').innerText = '구글 실시간 직결 성공!';
+            document.getElementById('updateStatus').innerText = '!';
             document.getElementById('updateStatus').style.backgroundColor = '#dcfce7';
             document.getElementById('updateStatus').style.color = '#166534';
             document.getElementById('dataBox').style.opacity = '1';
@@ -220,8 +220,8 @@
         document.getElementById('finalDivUsd').innerText = '$ ' + finalDivUsd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         
         // 원화 표시 (정수 콤마)
-        document.getElementById('finalGrowthKrw').innerText = '약 ₩ ' + finalGrowthKrw.toLocaleString('ko-KR', {maximumFractionDigits: 0});
-        document.getElementById('finalDivKrw').innerText = '약 ₩ ' + finalDivKrw.toLocaleString('ko-KR', {maximumFractionDigits: 0});
+        document.getElementById('finalGrowthKrw').innerText = finalGrowthKrw.toLocaleString('ko-KR', {maximumFractionDigits: 0});
+        document.getElementById('finalDivKrw').innerText = finalDivKrw.toLocaleString('ko-KR', {maximumFractionDigits: 0});
         
         document.getElementById('finalRatio').innerText = finalGrowthRatio + '% : ' + finalDividendRatio + '%';
 
