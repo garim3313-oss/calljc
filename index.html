@@ -32,7 +32,6 @@
 
 <div class="app-container">
     <h2>📈 QQQM/SCHD 리밸런싱</h2>
-    <p class="subtitle">구글 스프레드시트 실시간 연동 완료</p>
     
     <div class="section-title">1. 내 계좌 현재 상태</div>
     <div class="row">
@@ -210,7 +209,9 @@
         document.getElementById('schdBuy').innerText = schdBuyShares + ' 주';
         document.getElementById('remainingCash').innerText = remaining + ' $';
         
-        document.getElementById('finalGrowth').innerText = '$' + finalGrowth.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('finalGrowth').innerText = finalGrowth.toLocaleString('krw', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            '$' + finalGrowth.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        
         document.getElementById('finalDividend').innerText = '$' + finalDividend.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('finalRatio').innerText = finalGrowthRatio + '% : ' + finalDividendRatio + '%';
 
