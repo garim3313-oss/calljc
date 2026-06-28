@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QQQM & SCHD 7:3 리밸런싱 계산기</title>
+    <style>
+        body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #f4f6f8; margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .app-container { background-color: #ffffff; width: 100%; max-width: 450px; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h2 { text-align: center; color: #222; margin-bottom: 5px; font-size: 22px; }
+        p.subtitle { text-align: center; color: #777; font-size: 13px; margin-bottom: 20px; }
+        .section-title { font-size: 15px; font-weight: bold; color: #0056b3; margin-top: 25px; margin-bottom: 12px; border-bottom: 2px solid #f0f2f5; padding-bottom: 5px; display: flex; justify-content: space-between; }
+        .status-badge { font-size: 11px; background-color: #e6f2ff; color: #0056b3; padding: 3px 8px; border-radius: 10px; font-weight: normal; }
+        .input-group { margin-bottom: 12px; }
+        .row { display: flex; gap: 10px; }
+        .col { flex: 1; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; color: #444; font-size: 13px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; box-sizing: border-box; background-color: #fafafa; transition: border-color 0.2s; }
+        input:focus { border-color: #0056b3; outline: none; background-color: #fff; }
+        .price-display { font-size: 12px; color: #666; margin-top: 4px; text-align: right; }
+        button { width: 100%; padding: 16px; background-color: #0056b3; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: background-color 0.2s; }
+        button:hover { background-color: #004494; }
+        .result-box { margin-top: 25px; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .result-item { margin-bottom: 12px; font-size: 15px; color: #333; display: flex; justify-content: space-between; }
+        .result-item span { font-weight: bold; color: #e53e3e; font-size: 16px; }
+        .final-stats { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #cbd5e1; }
+        .final-stats .stat-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: #475569; }
+        .final-stats .stat-row b { color: #0f172a; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <h2>📈 QQQM/SCHD 리밸런싱</h2>
+    <p class="subtitle">구글 스프레드시트 실시간 연동 완료</p>
+    
+    <div class="section-title">1. 내 계좌 현재 상태</div>
+    <div class="row">
+        <div class="col">
+            <label for="qqqOwned">보유 QQQ</label>
+            <input type="number" id="qqqOwned" placeholder="0" value="0">
+        </div>
+        <div class="col">
+            <label for="qqqmOwned">보유 QQQM</label>
+            <input type="number" id="qqqmOwned" placeholder="0" value="0">
+        </div>
+        <div class="col">
+            <label for="schdOwned">보유 SCHD</label>
+            <input type="number" id="schdOwned" placeholder="0" value="0">
+        </div>
+    </div>
+
+    <div class="section-title">
+        2. 현재가 및 환율 
+        <span class="status-badge" id="updateStatus">구글에서 불러오는 중...</span>
+    </div>
+    <div class="row">
+        <div class="col">
+            <label for="qqqmPrice">QQQM ($)</label>
+            <input type="number" id="qqqmPrice" step="0.01">
+            <div class="price-display" id="qqqmKrw">0 원</div>
+        </div>
+        <div class="col">
+            <label for="schdPrice">SCHD ($)</label>
+            <input type="number" id="schdPrice" step="0.01">
+            <div class="price-display" id="schdKrw">0 원</div>
+        </div>
+    </div>
+    <input type="hidden" id="qqqPrice" value="0">
+    <div style="font-size: 11px; color: #999; text-align: right; margin-top: -5px; margin-bottom: 10px;" id="qqqPriceDisplay">QQQ: 대기 중... / 환율: 대기 중...</div>
+
+    <div class="section-title">3. 이번 달 매수 설정</div>
+    <div class="input-group">
+        <label for="totalBudget">추가 매수할 달러 ($)</label>
+        <input type="number" id="totalBudget" placeholder="예: 1000">
+    </div>
+
+    <button onclick="calculateRebalance()">최적 매수 수량 계산</button>
+
+    <div class="result-box" id="resultBox" style="display: none;">
+        <div class="result-item">🛒 <b>QQQM 매수:</b> <span id="qqqmBuy">0 주</span></div>
+        <div class="result-item">🛒 <b>SCHD 매수:</b> <span id="schdBuy">0 주</span></div>
+        <div class="result-item" style="color: #0056b3;">💵 <b>남은 달러:</b> <span style="color:#0056b3;" id="remainingCash">0 $</span></div>
+        
+        <div class="final-stats">
+            <div style="font-weight: bold; color: #333; margin-bottom: 10px; font-size: 13px;">📊 매수 후 예상 포트폴리오</div>
+            <div class="stat-row"><span>성장 (QQQ+QQQM) 총액:</span><b id="finalGrowth">$0</b></div>
+            <div class="stat-row"><span>배당 (SCHD) 총액:</span><b id="finalDividend">$0</b></div>
+            <div class="stat-row" style="margin-top: 8px; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+                <span>최종 비율 (성장 : 배당)</span>
+                <b id="finalRatio" style="color: #0056b3;">0% : 0%</b>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 🔥 형님의 구글 시트 원본 링크 (우회 서버 없이 직접 연결!)
+    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQl3BpFtBNCaUOJ7STB2s5LBI8YFd23l2AHY2h4V9GamkZ-7UHHvmdQTkpAM2_eVvjp0p5Ku-OsPui-/pub?output=csv"; 
+
+    let currentExchangeRate = 1350; 
+
+    window.onload = async function() {
+        try {
+            // 이제 프록시를 거치지 않고 바로 구글 시트 URL로 요청합니다.
+            const response = await fetch(GOOGLE_SHEET_CSV_URL);
+            
+            if (!response.ok) {
+                throw new Error("구글 시트 접속에 실패했습니다.");
+            }
+            
+            const data = await response.text();
+            
+            if (data.includes("<!DOCTYPE html>")) {
+                throw new Error("웹에 게시가 안 되었습니다.");
+            }
+            
+            let cleanData = data.replace(/"([^"]*)"/g, function(match, p1) {
+                return p1.replace(/,/g, ''); 
+            });
+            
+            const rows = cleanData.split('\n').map(row => row.split(','));
+            const validRows = rows.filter(row => row.length >= 2 && row[1].trim() !== '');
+
+            if (validRows.length < 4) {
+                throw new Error("시트의 데이터(행)가 부족합니다.");
+            }
+
+            const prices = {
+                'QQQ': parseFloat(validRows[0][1]),
+                'QQQM': parseFloat(validRows[1][1]),
+                'SCHD': parseFloat(validRows[2][1])
+            };
+            currentExchangeRate = parseFloat(validRows[3][1]);
+
+            document.getElementById('qqqPrice').value = prices['QQQ'];
+            document.getElementById('qqqmPrice').value = prices['QQQM'];
+            document.getElementById('schdPrice').value = prices['SCHD'];
+            
+            document.getElementById('qqqPriceDisplay').innerText = `QQQ: $${prices['QQQ']} / 적용환율: ${currentExchangeRate.toLocaleString()}원`;
+            
+            updateKrwDisplay('qqqmPrice', 'qqqmKrw');
+            updateKrwDisplay('schdPrice', 'schdKrw');
+
+            document.getElementById('updateStatus').innerText = '구글 실시간 직결 성공!';
+            document.getElementById('updateStatus').style.backgroundColor = '#dcfce7';
+            document.getElementById('updateStatus').style.color = '#166534';
+        } catch (error) {
+            console.error("데이터 로드 실패", error);
+            document.getElementById('updateStatus').innerText = '오류: ' + error.message;
+            document.getElementById('updateStatus').style.backgroundColor = '#fee2e2';
+            document.getElementById('updateStatus').style.color = '#991b1b';
+        }
+    };
+
+    function updateKrwDisplay(inputId, krwId) {
+        const usdValue = parseFloat(document.getElementById(inputId).value) || 0;
+        const krwValue = usdValue * currentExchangeRate;
+        document.getElementById(krwId).innerText = krwValue.toLocaleString('ko-KR', {maximumFractionDigits: 0}) + ' 원';
+    }
+
+    document.getElementById('qqqmPrice').addEventListener('input', () => updateKrwDisplay('qqqmPrice', 'qqqmKrw'));
+    document.getElementById('schdPrice').addEventListener('input', () => updateKrwDisplay('schdPrice', 'schdKrw'));
+
+    function calculateRebalance() {
+        const budget = parseFloat(document.getElementById('totalBudget').value) || 0;
+        const qqqP = parseFloat(document.getElementById('qqqPrice').value) || 0;
+        const qqqmP = parseFloat(document.getElementById('qqqmPrice').value) || 0;
+        const schdP = parseFloat(document.getElementById('schdPrice').value) || 0;
+        
+        const qqqO = parseFloat(document.getElementById('qqqOwned').value) || 0;
+        const qqqmO = parseFloat(document.getElementById('qqqmOwned').value) || 0;
+        const schdO = parseFloat(document.getElementById('schdOwned').value) || 0;
+
+        if (!qqqmP || !schdP) {
+            alert("주가를 확인해주세요 형님!");
+            return;
+        }
+
+        const currentGrowthValue = (qqqO * qqqP) + (qqqmO * qqqmP);
+        const currentDividendValue = (schdO * schdP);
+        const totalTargetWealth = currentGrowthValue + currentDividendValue + budget;
+
+        const targetGrowthValue = totalTargetWealth * 0.7;
+        const targetDividendValue = totalTargetWealth * 0.3;
+
+        let growthNeed = Math.max(0, targetGrowthValue - currentGrowthValue);
+        let dividendNeed = Math.max(0, targetDividendValue - currentDividendValue);
+
+        const totalNeed = growthNeed + dividendNeed;
+        if (totalNeed > budget && totalNeed > 0) {
+            growthNeed = budget * (growthNeed / totalNeed);
+            dividendNeed = budget * (dividendNeed / totalNeed);
+        }
+
+        const qqqmBuyShares = Math.floor(growthNeed / qqqmP);
+        const schdBuyShares = Math.floor(dividendNeed / schdP);
+
+        const totalSpent = (qqqmBuyShares * qqqmP) + (schdBuyShares * schdP);
+        const remaining = (budget - totalSpent).toFixed(2);
+
+        const finalGrowth = currentGrowthValue + (qqqmBuyShares * qqqmP);
+        const finalDividend = currentDividendValue + (schdBuyShares * schdP);
+        const finalTotal = finalGrowth + finalDividend;
+        
+        const finalGrowthRatio = finalTotal > 0 ? ((finalGrowth / finalTotal) * 100).toFixed(1) : 0;
+        const finalDividendRatio = finalTotal > 0 ? ((finalDividend / finalTotal) * 100).toFixed(1) : 0;
+
+        document.getElementById('qqqmBuy').innerText = qqqmBuyShares + ' 주';
+        document.getElementById('schdBuy').innerText = schdBuyShares + ' 주';
+        document.getElementById('remainingCash').innerText = remaining + ' $';
+        
+        document.getElementById('finalGrowth').innerText = '$' + finalGrowth.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('finalDividend').innerText = '$' + finalDividend.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('finalRatio').innerText = finalGrowthRatio + '% : ' + finalDividendRatio + '%';
+
+        document.getElementById('resultBox').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
