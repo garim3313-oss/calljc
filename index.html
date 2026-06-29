@@ -101,7 +101,7 @@
                     <div id="finalTotalKrw" style="font-size: 14px; color: #64748b; margin-top: 3px;">0원</div>
                </div>
             </div>
-            <div style="padding-top: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #0369a1; font-size: 13px;">
+            <div style="padding-top: 5px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #0369a1; font-size: 13px;">
                 <span>최종 비율 (성장 : 배당)</span>
                 <span id="finalRatio">0% : 0%</span>
             </div>
@@ -144,6 +144,10 @@
                 exchangeRate: parseFloat(validRows[3][1]) || 0
             };
 
+            if (marketData.exchangeRate === 0) {
+                throw new Error("불러오기 실패! (환율 정보 없음)");
+            };
+            
             // 화면에 가져온 주가 보여주기
             document.getElementById('displayRate').innerText = marketData.exchangeRate.toLocaleString('ko-KR') + '원';
             document.getElementById('displayQqq').innerText = '$ ' + marketData.qqqPrice;
@@ -173,7 +177,7 @@
         const budget = parseFloat(document.getElementById('totalBudget').value) || 0;
         
         if (budget <= 0) {
-            alert("이번 달 추가로 투자하실 금액을 입력해주세요, 형님!");
+            alert("이번 달 추가로 투자하실 금액을 입력하세요");
             return;
         }
 
